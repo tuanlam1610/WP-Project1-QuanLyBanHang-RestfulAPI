@@ -6,7 +6,7 @@ router.post('/add', bookController.addBook);
 
 router.get('/search', bookController.searchBook);
 
-router.get('/report/:id', bookController.saleReport);
+router.get('/report', bookController.saleReport);
 
 router.get('/detail/:id', bookController.getABook)
 
