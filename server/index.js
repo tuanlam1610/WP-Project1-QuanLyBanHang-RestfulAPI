@@ -19,6 +19,7 @@ app.use(express.json())
 app.use('/img', express.static("images"));
 
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cors());
 
 app.use('/book', bookRoute);
@@ -33,11 +34,10 @@ app.get('/', (req, res) => {
 // Set up storage engine for multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, './'); // Directory to save the file
+    cb(null, './images'); // Directory to save the file
   },
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, file.fieldname + ext); // File name with timestamp
+    cb(null, file.originalname); // File name with timestamp
   }
 });
 
@@ -97,7 +97,25 @@ app.post('/uploadExcel', upload.single('file'), async (req, res) => {
   }
 });
 
+app.post('/uploadImg', upload.single('image'), async (req, res, next) => {
+  console.log(req.file)
+  const newImg = new model.Img({
+    img: {
+      data: fs.readFileSync(path.join('./images/' + req.file.filename)),
+      contentType: 'image/png'
+    },
+    name: req.body.name
+  })
+  newImg.save()
+  console.log(newImg)
+  res.status(200).json(newImg)
+});
 
+app.get('/getImg/:id', async (req, res) => {
+  const img = await model.Img.findById(req.params.id)
+  res.status(200).json(img)
+
+});
 
 app.get('/dashboard', async (req, res) => {
   const numOfBooks = await model.Book.count()

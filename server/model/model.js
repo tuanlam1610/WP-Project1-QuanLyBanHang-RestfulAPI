@@ -1,5 +1,14 @@
 const mongoose = require('mongoose');
 
+const imgSchema = new mongoose.Schema({
+    name: String,
+    img:
+    {
+        data: Buffer,
+        contentType: String
+    }
+})
+
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -87,5 +96,6 @@ let User = mongoose.model("User", userSchema);
 let Book = mongoose.model("Book", bookSchema);
 let Category = mongoose.model("Category", categorySchema);
 let Order = mongoose.model("Order", orderSchema);
+let Img = mongoose.model("Img", imgSchema)
 
-module.exports = { User, Book, Category, Order }
+module.exports = { User, Book, Category, Order, Img }
