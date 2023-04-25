@@ -183,7 +183,7 @@ const orderController = {
             const modeReport = req.query.mode;
             const start = new Date(req.query.minDate);
             const end = req.query.maxDate ? new Date(req.query.maxDate) : Date(Date.now());
-
+            console.log(end)
             const filter = {
                 date: { $gte: start, $lte: end }
             };
@@ -218,8 +218,10 @@ const orderController = {
             }
 
             const incomeReport = await model.Order.aggregate(aggregateQuery);
-
-            res.status(200).json(incomeReport);
+            console.log(incomeReport);
+            res.status(200).json({
+                incomeReport: incomeReport
+            });
         } catch (err) {
             res.status(500).json({ success: false, msg: err.message });
         }

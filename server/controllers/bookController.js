@@ -193,12 +193,6 @@ const bookController = {
                         localField: "listOfBook.book",
                         foreignField: "_id",
                         as: "bookDetails",
-                        // pipeline: {
-                        //     $project: {
-                        //         _id: 1,
-                        //         name: 2,
-                        //     }
-                        // }
                     }
                 },
                 {
@@ -209,8 +203,14 @@ const bookController = {
                         },
                         totalQuantity: { $sum: "$listOfBook.quantity" }
                     }
-                },
-                {
+                }, {
+                //     $project: {
+                //         "date": 1,
+                //         "book.name": 1,
+                //         "totalQuantity": 1
+                //     }
+                // },
+                // {
                     $sort: {
                         totalQuantity: -1
                     }

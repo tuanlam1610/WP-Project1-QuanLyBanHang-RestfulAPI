@@ -7,6 +7,7 @@ require('dotenv/config');
 const userController = {
     login: async (req, res) => {
         try {
+            console.log(req.body)
             const findUser = await model.User.findOne({ username: req.body.username });
             if (findUser) {
                 const result = await bcrypt.compare(req.body.password, findUser.password);
@@ -14,15 +15,15 @@ const userController = {
                     const payload = {
                         id: findUser.id,
                         username: findUser.username,
-                      };
-                      
-                      const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '30 days'});
+                    };
+
+                    const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30 days' });
                     res.status(200).json({
                         result: result,
                         token: accessToken
                     });
                 }
-                else{
+                else {
                     res.status(400).json({
                         result: result,
                         msg: 'Username hoặc password không khớp!'
