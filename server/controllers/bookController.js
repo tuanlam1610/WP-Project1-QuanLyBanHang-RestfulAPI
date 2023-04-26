@@ -1,10 +1,13 @@
 const model = require('../model/model')
 const mongoose = require('mongoose')
+const fs = require('fs');
+const path = require('path');
 
 const bookController = {
     addBook: async (req, res) => {
         try {
-            let msg;
+            console.log(req.file)
+            console.log(req.body)
             if (req.body.category_Name) {
                 const category = await model.Category.findOne({ name: req.body.category_Name });
                 if (!(await category)) {
@@ -14,14 +17,31 @@ const bookController = {
                 }
                 else {
                     req.body.category = category._id;
+                    if (req.file) {
+                        try {
+                            const newImg = new model.Img({
+                                data: fs.readFileSync(path.join('./images/' + req.file.filename))
+                            })
+                            newImg.save()
+                            req.body.imagePath = newImg._id
+                        } catch (error) {
+                            res.status(500).json({ msg: "Can not find path" })
+                        } finally {
+                            // Remove the uploaded file from the server
+                            fs.unlinkSync(req.file.path);
+                        }
+                    }
                     const newBook = new model.Book(req.body);
                     const savedBook = await newBook.save();
                     await category.updateOne({ $push: { listOfBook: savedBook._id } });
+
                     res.status(200).json({
                         msg: "Thêm sách thành công!",
                         book: savedBook
                     });
                 }
+            } else {
+                res.status(400).json({ msg: "bạn phải nhập thể loại sách" })
             }
         } catch (err) {
             res.status(500).json(err);
@@ -62,6 +82,7 @@ const bookController = {
     deleteBook: async (req, res) => {
         try {
             const bookToDelete = await model.Book.findById(req.params.id);
+            await model.Img.findByIdAndDelete(bookToDelete.imagePath);
             await model.Category.findByIdAndUpdate(bookToDelete.category, { $pull: { listOfBook: bookToDelete._id } })
             await model.Book.findByIdAndDelete(req.params.id)
             res.status(200).json("Xóa thành công.")
@@ -109,67 +130,6 @@ const bookController = {
             res.status(500).json({ success: false, msg: err.message });
         }
     },
-    // saleReport: async (req, res) => {
-    //     try {
-    //         const modeReport = req.query.mode;
-    //         const start = new Date(req.query.minDate);
-    //         const end = req.query.maxDate ? new Date(req.query.maxDate) : Date(Date.now());
-
-    //         const filter = {
-    //             date: { $gte: start, $lte: end },
-    //         };
-
-    //         let aggregateQuery = [
-    //             {
-    //                 $match: filter
-    //             },
-    //             {
-    //                 $unwind: "$listOfBook"
-    //             },
-    //             {
-    //                 $group: {
-    //                     _id: {
-    //                         date: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
-    //                         book: "$listOfBook.book",
-    //                     },
-    //                     totalQuantity: { $sum: "$listOfBook.quantity" }
-    //                 }
-    //             },
-    //             {
-    //                 $lookup: {
-    //                     from: "books",
-    //                     localField: "listOfBook.book", // sửa trường localField
-    //                     foreignField: "_id",
-    //                     as: "bookDetails"
-    //                 }
-    //             },
-    //             {
-    //                 $sort: {
-    //                     totalQuantity: -1
-    //                 }
-    //             }
-    //         ];
-
-    //         if (modeReport === "month") {
-    //             aggregateQuery[2].$group._id.date = { $dateToString: { format: "%Y-%m", date: "$date" } };
-    //         } else if (modeReport === "year") {
-    //             aggregateQuery[2].$group._id.date = { $dateToString: { format: "%Y", date: "$date" } };
-    //         } else if (modeReport === "week") {
-    //             aggregateQuery[2].$group._id = {
-    //                 week: { $isoWeek: "$date" },
-    //                 year: { $year: "$date" },
-    //                 book: "$listOfBook.book",
-    //             };
-    //         }
-
-    //         const incomeReport = await model.Order.aggregate(aggregateQuery);
-    //         console.log(incomeReport)
-    //         res.status(200).json(incomeReport);
-    //     } catch (err) {
-    //         res.status(500).json({ success: false, msg: err.message });
-    //     }
-    // }
-
     saleReport: async (req, res) => {
         try {
             const modeReport = req.query.mode;
@@ -204,14 +164,8 @@ const bookController = {
                         totalQuantity: { $sum: "$listOfBook.quantity" }
                     }
                 }, {
-                //     $project: {
-                //         "date": 1,
-                //         "book.name": 1,
-                //         "totalQuantity": 1
-                //     }
-                // },
-                // {
                     $sort: {
+                        "_id.date": 1,
                         totalQuantity: -1
                     }
                 }
@@ -225,7 +179,7 @@ const bookController = {
                 aggregateQuery[2].$group._id = {
                     week: { $isoWeek: "$date" },
                     year: { $year: "$date" },
-                    book: "$listOfBook.book",
+                    book: "$bookDetails",
                 };
             }
 

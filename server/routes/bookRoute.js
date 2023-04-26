@@ -1,8 +1,20 @@
 const bookController = require('../controllers/bookController');
+const multer = require('multer')
 
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, './images'); // Directory to save the file
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.originalname); // File name with timestamp
+    }
+});
+
+// Set up multer middleware
+const upload = multer({ storage: storage });
 const router = require('express').Router();
 
-router.post('/add', bookController.addBook);
+router.post('/add', upload.single("image"), bookController.addBook);
 
 router.get('/search', bookController.searchBook);
 

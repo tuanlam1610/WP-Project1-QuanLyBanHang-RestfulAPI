@@ -1,12 +1,7 @@
 const mongoose = require('mongoose');
 
 const imgSchema = new mongoose.Schema({
-    name: String,
-    img:
-    {
-        data: Buffer,
-        contentType: String
-    }
+    data: Buffer,
 })
 
 const userSchema = new mongoose.Schema({
@@ -36,8 +31,8 @@ const bookSchema = new mongoose.Schema({
         min: 1600
     },
     imagePath: {
-        type: String,
-        required: true
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Img"
     },
     price: {
         type: Number,

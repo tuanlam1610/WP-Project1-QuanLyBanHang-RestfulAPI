@@ -66,6 +66,7 @@ app.post('/uploadExcel', upload.single('file'), async (req, res) => {
     const temp = xlsx.utils.sheet_to_json(file.Sheets[file.SheetNames[0]]);
     for (const row of temp) {
       try {
+        row.imagePath = null;
         console.log(row);
         if (row.categoryName) {
           const category = await model.Category.findOne({ name: row.categoryName });
@@ -98,75 +99,85 @@ app.post('/uploadExcel', upload.single('file'), async (req, res) => {
 });
 
 app.post('/uploadImg', upload.single('image'), async (req, res, next) => {
-  console.log(req.file)
-  const newImg = new model.Img({
-    img: {
-      data: fs.readFileSync(path.join('./images/' + req.file.filename)),
-      contentType: 'image/png'
-    },
-    name: req.body.name
-  })
-  newImg.save()
-  console.log(newImg)
-  res.status(200).json(newImg)
+  try {
+    const newImg = new model.Img({
+      data: fs.readFileSync(path.join('./images/' + req.file.filename))
+    })
+    newImg.save()
+    console.log(req.file)
+    console.log(req.body)
+    res.status(200).json(newImg)
+  } catch (error) {
+    res.status(500).json(err);
+  } finally {
+    // Remove the uploaded file from the server
+    fs.unlinkSync(req.file.path);
+  }
 });
 
 app.get('/getImg/:id', async (req, res) => {
-  const img = await model.Img.findById(req.params.id)
-  res.status(200).json(img)
-
+  try {
+    const img = await model.Img.findById(req.params.id)
+    res.status(200).json(img)
+  } catch (err) {
+    res.status(500).json({ success: false, msg: err.message });
+  }
 });
 
 app.get('/dashboard', async (req, res) => {
-  const numOfBooks = await model.Book.count()
-  console.log(numOfBooks);
+  try {
+    const numOfBooks = await model.Book.count()
+    console.log(numOfBooks);
 
-  const now = new Date(Date.now());
-  console.log(now);
-  const start = new Date(now);
-  start.setDate(start.getDate() - 7);
-  start.setHours(0);
-  start.setMinutes(0);
-  start.setSeconds(0);
-  start.setMilliseconds(0);
-  console.log(start);
-  const numOfOrderThisWeek = await model.Order.count().where({
-    date: {
-      $gte: start,
-      $lte: now
-    }
-  });
-  console.log(numOfOrderThisWeek)
-  const startOfMonth = new Date(now);
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0);
-  startOfMonth.setMinutes(0);
-  startOfMonth.setSeconds(0);
-  startOfMonth.setMilliseconds(0);
-  console.log(startOfMonth)
+    const now = new Date(Date.now());
+    console.log(now);
+    const start = new Date(now);
+    start.setDate(start.getDate() - 7);
+    start.setHours(0);
+    start.setMinutes(0);
+    start.setSeconds(0);
+    start.setMilliseconds(0);
+    console.log(start);
+    const numOfOrderThisWeek = await model.Order.count().where({
+      date: {
+        $gte: start,
+        $lte: now
+      }
+    });
+    console.log(numOfOrderThisWeek)
+    const startOfMonth = new Date(now);
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0);
+    startOfMonth.setMinutes(0);
+    startOfMonth.setSeconds(0);
+    startOfMonth.setMilliseconds(0);
+    console.log(startOfMonth)
 
-  const numOfOrderThisMonth = await model.Order.count().where({
-    date: {
-      $gte: startOfMonth,
-      $lte: now
-    }
-  });
-  console.log(numOfOrderThisMonth);
-  const listOfBookOutOfStock = await model.Book.find({
-    stock: {
-      $lte: 5
-    }
-  })
-    .sort({ stock: 1 })
-    .limit(5);
+    const numOfOrderThisMonth = await model.Order.count().where({
+      date: {
+        $gte: startOfMonth,
+        $lte: now
+      }
+    });
+    console.log(numOfOrderThisMonth);
+    const listOfBookOutOfStock = await model.Book.find({
+      stock: {
+        $lte: 5
+      }
+    })
+      .sort({ stock: 1 })
+      .limit(5);
 
-  console.log(listOfBookOutOfStock);
-  res.status(200).json({
-    numOfBooks: numOfBooks,
-    numOfOrderThisWeek: numOfOrderThisWeek,
-    numOfOrderThisMonth: numOfOrderThisMonth,
-    listOfBookOutOfStock: listOfBookOutOfStock
-  })
+    console.log(listOfBookOutOfStock);
+    res.status(200).json({
+      numOfBooks: numOfBooks,
+      numOfOrderThisWeek: numOfOrderThisWeek,
+      numOfOrderThisMonth: numOfOrderThisMonth,
+      listOfBookOutOfStock: listOfBookOutOfStock
+    })
+  } catch (err) {
+    res.status(500).json({ success: false, msg: err.message });
+  }
 })
 
 mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true, useUnifiedTopology: true })

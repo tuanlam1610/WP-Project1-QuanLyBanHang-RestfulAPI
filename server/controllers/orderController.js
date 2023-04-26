@@ -44,7 +44,7 @@ const orderController = {
         try {
             const page = req.query.page || 1;
             const itemPerPage = req.query.itemPerPage || 10;
-            const minDate = req.query.minDate ? new Date(req.query.minDate) : null;
+            const minDate = req.query.minDate ? new Date(req.query.minDate) : new Date("2000-01-01");
             const maxDate = req.query.maxDate ? new Date(req.query.maxDate) : Date(Date.now());
             const numOfOrders = await model.Order.count()
                 .where({
@@ -138,46 +138,6 @@ const orderController = {
             res.status(500).json({ success: false, msg: err.message });
         }
     },
-    // incomeReport: async (req, res) => {
-    //     try {
-    //         const modeReport = req.query.mode;
-    //         const start = new Date(req.query.minDate);
-    //         const end = req.query.maxDate ? new Date(req.query.maxDate) : Date(Date.now());
-
-    //         const filter = {
-    //             date: { $gte: start, $lte: end }
-    //         };
-
-    //         let aggregateQuery = [
-    //             { $match: filter },
-    //             {
-    //                 $group: {
-    //                     _id: {
-    //                         date: { $dateToString: { format: "%Y-%m-%d", date: "$date" } }
-    //                     },
-    //                     totalIncome: { $sum: "$totalPrice" }
-    //                 }
-    //             },
-    //             {
-    //                 $sort: {
-    //                     date: -1
-    //                 }
-    //             }
-    //         ];
-
-    //         if (modeReport === "month") {
-    //             aggregateQuery[1].$group._id = { $dateToString: { format: "%Y-%m", date: "$date" } };
-    //         } else if (modeReport === "year") {
-    //             aggregateQuery[1].$group._id = { $dateToString: { format: "%Y", date: "$date" } };
-    //         }
-
-    //         const incomeReport = await model.Order.aggregate(aggregateQuery);
-
-    //         res.status(200).json(incomeReport);
-    //     } catch (err) {
-    //         res.status(500).json({ success: false, msg: err.message });
-    //     }
-    // }
     incomeReport: async (req, res) => {
         try {
             const modeReport = req.query.mode;
@@ -200,7 +160,7 @@ const orderController = {
                 },
                 {
                     $sort: {
-                        date: -1
+                        "_id.date": -1
                     }
                 }
             ];
