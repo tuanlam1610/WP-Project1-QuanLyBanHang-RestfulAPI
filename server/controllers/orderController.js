@@ -160,7 +160,7 @@ const orderController = {
                 },
                 {
                     $sort: {
-                        "_id.date": -1
+                        "_id.date": 1
                     }
                 }
             ];

@@ -24,6 +24,8 @@ router.get('/detail/:id', bookController.getABook)
 
 router.delete('/delete/:id', bookController.deleteBook);
 
-router.put('/update/:id', bookController.updateBook);
+router.put('/deleteImg/:id', bookController.deleteImg);
+
+router.put('/update/:id', upload.single("image"), bookController.updateBook);
 
 module.exports = router;

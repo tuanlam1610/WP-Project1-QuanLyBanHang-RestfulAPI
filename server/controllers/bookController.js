@@ -31,6 +31,9 @@ const bookController = {
                             fs.unlinkSync(req.file.path);
                         }
                     }
+                    else {
+                        req.body.imagePath = null
+                    }
                     const newBook = new model.Book(req.body);
                     const savedBook = await newBook.save();
                     await category.updateOne({ $push: { listOfBook: savedBook._id } });
@@ -70,10 +73,43 @@ const bookController = {
                 await model.Category.findByIdAndUpdate(bookToUpdate.category, { $pull: { listOfBook: bookToUpdate._id } })
                 await model.Category.findByIdAndUpdate(req.body.category, { $push: { listOfBook: bookToUpdate._id } })
             }
+            if (req.file) {
+                try {
+                    if (bookToUpdate.imagePath) {
+                        await model.Img.findByIdAndDelete(bookToUpdate.imagePath)
+                    }
+                    const newImg = new model.Img({
+                        data: fs.readFileSync(path.join('./images/' + req.file.filename))
+                    })
+                    newImg.save()
+                    req.body.imagePath = newImg._id
+                } catch (error) {
+                    res.status(500).json({ msg: "Can not find path" })
+                } finally {
+                    // Remove the uploaded file from the server
+                    fs.unlinkSync(req.file.path);
+                }
+            }
             const updatedBook = await model.Book.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true })
             res.status(200).json({
                 msg: "Cập nhật sách thành công",
                 updatedBook: updatedBook
+            })
+        } catch (err) {
+            res.status(500).json({ success: false, msg: err.message });
+        }
+    },
+    deleteImg: async (req, res) => {
+        try {
+            const bookToUpdate = await model.Book.findById(req.params.id);
+            if (bookToUpdate.imagePath) {
+                await model.Img.findByIdAndDelete(bookToUpdate.imagePath)
+            }
+            bookToUpdate.imagePath = null;
+            bookToUpdate.save();
+            res.status(200).json({
+                msg:"Xóa hình thành công",
+                book: bookToUpdate
             })
         } catch (err) {
             res.status(500).json({ success: false, msg: err.message });
