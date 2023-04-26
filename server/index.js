@@ -109,10 +109,11 @@ app.post('/uploadImg', upload.single('image'), async (req, res, next) => {
     res.status(200).json(newImg)
   } catch (error) {
     res.status(500).json(err);
-  } finally {
-    // Remove the uploaded file from the server
-    fs.unlinkSync(req.file.path);
-  }
+  } 
+  // finally {
+  //   // Remove the uploaded file from the server
+  //   fs.unlinkSync(req.file.path);
+  // }
 });
 
 app.get('/getImg/:id', async (req, res) => {
