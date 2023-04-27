@@ -34,7 +34,7 @@ app.get('/', (req, res) => {
 // Set up storage engine for multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, './images'); // Directory to save the file
+    cb(null, './'); // Directory to save the file
   },
   filename: (req, file, cb) => {
     cb(null, file.originalname); // File name with timestamp
@@ -100,14 +100,15 @@ app.post('/uploadExcel', upload.single('file'), async (req, res) => {
 
 app.post('/uploadImg', upload.single('image'), async (req, res, next) => {
   try {
+    console.log(req.file)
+    console.log(req.body)
     const newImg = new model.Img({
       data: fs.readFileSync(path.join('./images/' + req.file.filename))
     })
     newImg.save()
-    console.log(req.file)
-    console.log(req.body)
     res.status(200).json(newImg)
-  } catch (error) {
+  } catch (err) {
+    console.log(err)
     res.status(500).json(err);
   } 
   // finally {
