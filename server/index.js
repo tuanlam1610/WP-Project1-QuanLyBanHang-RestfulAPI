@@ -103,7 +103,7 @@ app.post('/uploadImg', upload.single('image'), async (req, res, next) => {
     console.log(req.file)
     console.log(req.body)
     const newImg = new model.Img({
-      data: fs.readFileSync(path.join('./images/' + req.file.filename))
+      data: fs.readFileSync(path.join('./' + req.file.filename))
     })
     newImg.save()
     res.status(200).json(newImg)
