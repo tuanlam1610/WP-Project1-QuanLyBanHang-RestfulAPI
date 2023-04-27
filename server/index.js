@@ -3,7 +3,6 @@ const app = express()
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const xlsx = require('xlsx')
@@ -12,6 +11,7 @@ const bookRoute = require('./routes/bookRoute')
 const categoryRoute = require('./routes/categoryRoute')
 const orderRoute = require('./routes/orderRoute')
 const userRoute = require('./routes/userRoute')
+const uploadMiddleware = require('./middleware/uploadFile');
 require('dotenv/config');
 const PORT = 5000
 
@@ -31,21 +31,8 @@ app.get('/', (req, res) => {
   res.send('Quản lý bán hàng Restful API.');
 })
 
-// Set up storage engine for multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, './'); // Directory to save the file
-  },
-  filename: (req, file, cb) => {
-    cb(null, file.originalname); // File name with timestamp
-  }
-});
-
-// Set up multer middleware
-const upload = multer({ storage: storage });
-
 // API endpoint for uploading Excel file
-app.post('/uploadExcel', upload.single('file'), async (req, res) => {
+app.post('/uploadExcel', uploadMiddleware, async (req, res) => {
   try {
     const file = xlsx.readFile(req.file.path);
     const sheets = file.SheetNames;
@@ -98,7 +85,7 @@ app.post('/uploadExcel', upload.single('file'), async (req, res) => {
   }
 });
 
-app.post('/uploadImg', upload.single('image'), async (req, res, next) => {
+app.post('/uploadImg', uploadMiddleware, async (req, res, next) => {
   try {
     console.log(req.file)
     console.log(req.body)

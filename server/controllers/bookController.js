@@ -20,7 +20,7 @@ const bookController = {
                     if (req.file) {
                         try {
                             const newImg = new model.Img({
-                                data: fs.readFileSync(path.join('../images/' + req.file.filename))
+                                data: fs.readFileSync(path.join('./' + req.file.filename))
                             })
                             newImg.save()
                             req.body.imagePath = newImg._id
@@ -79,7 +79,7 @@ const bookController = {
                         await model.Img.findByIdAndDelete(bookToUpdate.imagePath)
                     }
                     const newImg = new model.Img({
-                        data: fs.readFileSync(path.join('./images/' + req.file.filename))
+                        data: fs.readFileSync(path.join('./' + req.file.filename))
                     })
                     newImg.save()
                     req.body.imagePath = newImg._id
@@ -108,7 +108,7 @@ const bookController = {
             bookToUpdate.imagePath = null;
             bookToUpdate.save();
             res.status(200).json({
-                msg:"Xóa hình thành công",
+                msg: "Xóa hình thành công",
                 book: bookToUpdate
             })
         } catch (err) {
