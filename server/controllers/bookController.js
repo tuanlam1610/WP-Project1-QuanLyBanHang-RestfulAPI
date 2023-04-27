@@ -219,8 +219,10 @@ const bookController = {
                 };
             }
 
-            const incomeReport = await model.Order.aggregate(aggregateQuery);
-            res.status(200).json(incomeReport);
+            const saleReport = await model.Order.aggregate(aggregateQuery);
+            res.status(200).json({
+                saleReport: saleReport
+            });
         } catch (err) {
             res.status(500).json({ success: false, msg: err.message });
         }
