@@ -20,7 +20,7 @@ const bookController = {
                     if (req.file) {
                         try {
                             const newImg = new model.Img({
-                                data: fs.readFileSync(path.join('./images/' + req.file.filename))
+                                data: fs.readFileSync(path.join(__dirname+ './images/' + req.file.filename))
                             })
                             newImg.save()
                             req.body.imagePath = newImg._id
