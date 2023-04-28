@@ -225,8 +225,8 @@ const bookController = {
                     book: "$bookDetails",
                 };
                 aggregateQuery[4].$sort = {
-                    "_id.week": 1,
                     "_id.year": 1,
+                    "_id.week": 1,
                     totalQuantity: -1
                 }
             }

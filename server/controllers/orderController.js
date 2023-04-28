@@ -175,6 +175,10 @@ const orderController = {
                     year: { $year: "$date" }
                 };
                 aggregateQuery[1].$group.totalIncome = { $sum: "$totalPrice" };
+                aggregateQuery[2].$sort = {
+                    "_id.year": 1,
+                    "_id.week": 1
+                }
             }
 
             const incomeReport = await model.Order.aggregate(aggregateQuery);
