@@ -69,9 +69,16 @@ const bookController = {
     updateBook: async (req, res) => {
         try {
             const bookToUpdate = await model.Book.findById(req.params.id);
-            if (req.body.category) {
+            if (req.body.category_Name) {
+                const category = await model.Category.findOne({ name: req.body.category_Name });
+                if (!category) {
+                    res.status(400).json({
+                        msg: "Thể loại không tồn tại! Vui lòng nhập thể loại khác."
+                    })
+                }
+                req.body.category = category._id
                 await model.Category.findByIdAndUpdate(bookToUpdate.category, { $pull: { listOfBook: bookToUpdate._id } })
-                await model.Category.findByIdAndUpdate(req.body.category, { $push: { listOfBook: bookToUpdate._id } })
+                await model.Category.findByIdAndUpdate(category._id, { $push: { listOfBook: bookToUpdate._id } })
             }
             if (req.file) {
                 try {
@@ -135,7 +142,7 @@ const bookController = {
             const maxPrice = req.query.maxPrice || 100000000;
             const numOfBooks = await model.Book.count()
                 .where({
-                    name: { $regex: nameToSearch }
+                    name: { $regex: new RegExp(nameToSearch, "i") }
                 }).where({
                     price: {
                         $lte: maxPrice,
@@ -147,7 +154,7 @@ const bookController = {
             console.log(numOfPage)
             const listOfBook = await model.Book.find()
                 .where({
-                    name: { $regex: nameToSearch }
+                    name: { $regex: new RegExp(nameToSearch, "i") }
                 }).where({
                     price: {
                         $lte: maxPrice,
