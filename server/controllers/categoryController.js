@@ -21,14 +21,14 @@ const categoryController = {
             const nameToSearch = req.query.name || "";
             const numOfCategory = await model.Category.count()
                 .where({
-                    name: { $regex: nameToSearch }
+                    name: { $regex: new RegExp(nameToSearch, "i") }
                 });
             console.log(numOfCategory);
             const numOfPage = Math.ceil(numOfCategory / itemPerPage)
             console.log(numOfPage)
             const listOfCategory = await model.Category.find()
                 .where({
-                    name: { $regex: nameToSearch }
+                    name: { $regex: new RegExp(nameToSearch, "i") }
                 })
                 .sort({ name: 1 })
                 .skip((page - 1) * itemPerPage)
