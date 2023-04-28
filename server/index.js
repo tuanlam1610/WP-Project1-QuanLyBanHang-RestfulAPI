@@ -38,23 +38,19 @@ app.post('/uploadExcel', uploadMiddleware, async (req, res) => {
     const sheets = file.SheetNames;
 
     // Save categories
-    for (let i = 1; i < sheets.length; i++) {
-      const temp = xlsx.utils.sheet_to_json(file.Sheets[file.SheetNames[i]]);
-      for (const category of temp) {
-        try {
-          const newCategory = new model.Category(category);
-          await newCategory.save();
-        } catch (err) {
-          console.error(err);
-        }
+    const categorySheet = xlsx.utils.sheet_to_json(file.Sheets["Category"]);
+    for (const category of categorySheet) {
+      try {
+        const newCategory = new model.Category(category);
+        await newCategory.save();
+      } catch (err) {
+        console.error(err);
       }
     }
-
-    const temp = xlsx.utils.sheet_to_json(file.Sheets[file.SheetNames[0]]);
-    for (const row of temp) {
+    const bookSheet = xlsx.utils.sheet_to_json(file.Sheets["Book"]);
+    for (const row of bookSheet) {
       try {
         row.imagePath = null;
-        console.log(row);
         if (row.categoryName) {
           const category = await model.Category.findOne({ name: row.categoryName });
           if (category) {
@@ -70,11 +66,11 @@ app.post('/uploadExcel', uploadMiddleware, async (req, res) => {
             console.error(`Category ${row.categoryName} not found`);
           }
         }
-      } catch (err) {
+      }
+      catch (err) {
         console.error(err);
       }
     }
-
     res.status(200).json("Thêm thành công");
   } catch (err) {
     console.error(err);
@@ -97,7 +93,7 @@ app.post('/uploadImg', uploadMiddleware, async (req, res, next) => {
   } catch (err) {
     console.log(err)
     res.status(500).json(err);
-  } 
+  }
   finally {
     // Remove the uploaded file from the server
     fs.unlinkSync(req.file.path);
