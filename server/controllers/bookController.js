@@ -208,11 +208,11 @@ const bookController = {
             ];
 
             if (modeReport === "month") {
-                aggregateQuery[2].$group._id.date = { $dateToString: { format: "%Y-%m", date: "$date" } };
+                aggregateQuery[3].$group._id.date = { $dateToString: { format: "%Y-%m", date: "$date" } };
             } else if (modeReport === "year") {
-                aggregateQuery[2].$group._id.date = { $dateToString: { format: "%Y", date: "$date" } };
+                aggregateQuery[3].$group._id.date = { $dateToString: { format: "%Y", date: "$date" } };
             } else if (modeReport === "week") {
-                aggregateQuery[2].$group._id = {
+                aggregateQuery[3].$group._id = {
                     week: { $isoWeek: "$date" },
                     year: { $year: "$date" },
                     book: "$bookDetails",
