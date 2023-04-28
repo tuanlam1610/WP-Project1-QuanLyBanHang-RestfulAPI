@@ -35,8 +35,6 @@ app.get('/', (req, res) => {
 app.post('/uploadExcel', uploadMiddleware, async (req, res) => {
   try {
     const file = xlsx.readFile(req.file.path);
-    const sheets = file.SheetNames;
-
     // Save categories
     const categorySheet = xlsx.utils.sheet_to_json(file.Sheets["Category"]);
     for (const category of categorySheet) {
