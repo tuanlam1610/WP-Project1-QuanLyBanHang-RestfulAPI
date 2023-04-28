@@ -217,6 +217,11 @@ const bookController = {
                     year: { $year: "$date" },
                     book: "$bookDetails",
                 };
+                aggregateQuery[4].$sort = {
+                    "_id.week": 1,
+                    "_id.year": 1,
+                    totalQuantity: -1
+                }
             }
 
             const saleReport = await model.Order.aggregate(aggregateQuery);
