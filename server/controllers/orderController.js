@@ -6,12 +6,12 @@ const orderController = {
         try {
             // Tính tổng giá trị đơn hàng
             var total = 0;
-            for (i in req.body.listOfBook) {
-                const book = (await model.Book.findById(req.body.listOfBook[i].book));
+            for (let i = 0; i < req.body.listOfBook.length; i++) {
+                const book = await model.Book.findById(req.body.listOfBook[i].book);
                 if (book.stock < req.body.listOfBook[i].quantity) {
                     res.status(400).json(`Sách ${book.name} không đủ số lượng yêu cầu của order!`);
+                    return;
                 }
-
                 total += req.body.listOfBook[i].quantity * book.price;
             }
 
@@ -102,39 +102,46 @@ const orderController = {
         }
     },
     updateAnOrder: async (req, res) => {
+        const session = await model.Order.startSession();
+        session.startTransaction();
         try {
-            const orderToUpdate = await model.Order.findById(req.params.id);
+            const orderToUpdate = await model.Order.findById(req.params.id).session(session);
             if (req.body.listOfBook) {
                 for (i in orderToUpdate.listOfBook) {
-                    await model.Book.updateOne({ _id: orderToUpdate.listOfBook[i].book }, { $inc: { stock: orderToUpdate.listOfBook[i].quantity } });
+                    await model.Book.updateOne({ _id: orderToUpdate.listOfBook[i].book }, { $inc: { stock: orderToUpdate.listOfBook[i].quantity } }, { session });
                 }
-
                 var total = 0;
                 for (i in req.body.listOfBook) {
-                    const book = (await model.Book.findById(req.body.listOfBook[i].book));
+                    const book = await model.Book.findById(req.body.listOfBook[i].book).session(session);
                     if (book.stock < req.body.listOfBook[i].quantity) {
+                        await session.abortTransaction();
+                        session.endSession();
                         res.status(400).json(`Sách ${book.name} không đủ số lượng yêu cầu của order!`);
+                        return;
                     }
-
+    
                     total += req.body.listOfBook[i].quantity * book.price;
                 }
-
                 for (i in req.body.listOfBook) {
-                    await model.Book.updateOne({ _id: req.body.listOfBook[i].book }, { $inc: { stock: - req.body.listOfBook[i].quantity } });
+                    await model.Book.updateOne({ _id: req.body.listOfBook[i].book }, { $inc: { stock: - req.body.listOfBook[i].quantity } }, { session });
                 }
-
+    
                 console.log(total);
                 orderToUpdate.listOfBook = req.body.listOfBook;
                 orderToUpdate.totalPrice = total
             }
             if (req.body.date)
                 orderToUpdate.date = new Date(req.body.date)
-            orderToUpdate.save();
+            await orderToUpdate.save({ session });
+            await session.commitTransaction();
+            session.endSession();
             res.status(200).json({
                 msg: "Cập nhật đơn hàng thành công",
                 order: orderToUpdate
             })
         } catch (err) {
+            await session.abortTransaction();
+            session.endSession();
             res.status(500).json({ success: false, msg: err.message });
         }
     },

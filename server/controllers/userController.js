@@ -28,6 +28,7 @@ const userController = {
                         result: result,
                         msg: 'Username hoặc password không khớp!'
                     });
+                    return;
                 }
             }
             else {

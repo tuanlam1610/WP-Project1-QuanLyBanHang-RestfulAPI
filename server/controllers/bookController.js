@@ -8,12 +8,19 @@ const bookController = {
         try {
             console.log(req.file)
             console.log(req.body)
+            if (req.body.stock < 0) {
+                res.status(400).json({
+                    msg: "Số lượng hàng phải lớn hơn 0!"
+                });
+                return;
+            }
             if (req.body.category_Name) {
                 const category = await model.Category.findOne({ name: req.body.category_Name });
                 if (!(await category)) {
                     res.status(400).json({
                         msg: "Thể loại này không tồn tại"
                     });
+                    return;
                 }
                 else {
                     req.body.category = category._id;
@@ -45,6 +52,7 @@ const bookController = {
                 }
             } else {
                 res.status(400).json({ msg: "bạn phải nhập thể loại sách" })
+                return;
             }
         } catch (err) {
             res.status(500).json(err);
@@ -61,6 +69,7 @@ const bookController = {
                 res.status(400).json({
                     msg: "Không tìm thấy sách này!"
                 })
+                return;
             }
         } catch (err) {
             res.status(500).json(err);
@@ -68,6 +77,14 @@ const bookController = {
     },
     updateBook: async (req, res) => {
         try {
+            if (req.body.stock) {
+                if (req.body.stock < 0) {
+                    res.status(400).json({
+                        msg: "Số lượng hàng phải lớn hơn 0!"
+                    });
+                    return;
+                }
+            }
             const bookToUpdate = await model.Book.findById(req.params.id);
             if (req.body.category_Name) {
                 const category = await model.Category.findOne({ name: req.body.category_Name });
@@ -75,6 +92,7 @@ const bookController = {
                     res.status(400).json({
                         msg: "Thể loại không tồn tại! Vui lòng nhập thể loại khác."
                     })
+                    return;
                 }
                 req.body.category = category._id
                 await model.Category.findByIdAndUpdate(bookToUpdate.category, { $pull: { listOfBook: bookToUpdate._id } })
