@@ -76,7 +76,7 @@ const categoryController = {
     },
     updateCategory: async (req, res) => {
         try {
-            const a = await model.Category.findByIdAndUpdate(req.params.id, { $set: { name: req.body.newName } }, {new: true});
+            const a = await model.Category.findByIdAndUpdate(req.params.id, { $set: { name: req.body.name } }, {new: true});
             res.status(200).json({
                 msg: "Cập nhật thể loại thành công",
                 categoryAfterUpdated: a
