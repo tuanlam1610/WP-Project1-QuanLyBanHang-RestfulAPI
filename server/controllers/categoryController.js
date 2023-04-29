@@ -53,7 +53,9 @@ const categoryController = {
                 .skip((page - 1) * req.query.itemPerPage)
                 .limit(itemPerPage)
                 .populate({ path: "category", select: "name" });
+            const categoryDetail = await model.Category.findById(req.params.id).select("name");
             res.status(200).json({
+                categoryDetail: categoryDetail,
                 listOfBook: listOfBook,
                 numOfBooks: numOfBooks,
                 numOfPage: numOfPage
