@@ -46,7 +46,7 @@ const orderController = {
             const itemPerPage = req.query.itemPerPage || 10;
             const minDate = req.query.minDate ? new Date(req.query.minDate) : new Date("2000-01-01");
             const maxDate = req.query.maxDate ? new Date(req.query.maxDate) : Date(Date.now());
-            maxDate.setDate(end.getDate() + 1);
+            maxDate.setDate(maxDate.getDate() + 1);
             const numOfOrders = await model.Order.count()
                 .where({
                     date: {
