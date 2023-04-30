@@ -196,7 +196,7 @@ const bookController = {
             const modeReport = req.query.mode;
             const start = new Date(req.query.minDate);
             const end = req.query.maxDate ? new Date(req.query.maxDate) : Date(Date.now());
-
+            end.setDate(end.getDate() + 1);
             const filter = {
                 date: { $gte: start, $lte: end },
             };
